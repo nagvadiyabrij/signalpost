@@ -62,7 +62,7 @@ export default function CompanyProfilePage() {
     setError(null);
     
     try {
-      const response = await fetch(`http://localhost:8000/api/company/${organizationNumber}`);
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000"}/api/company/${organizationNumber}`);
       
       if (response.status === 404) {
         setError("Company not found. Please search for the company first.");

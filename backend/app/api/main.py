@@ -8,6 +8,7 @@ from app.api import auth, admin, user
 from app.api.auth import get_current_user
 from app.models.user import User
 from app.validators.identity import IdentityVerifier
+from app.config import settings
 import uvicorn
 
 
@@ -16,7 +17,7 @@ app = FastAPI(title="Signalpost API", version="1.0.0")
 # CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],
+    allow_origins=[origin.strip() for origin in settings.cors_origins.split(",") if origin.strip()],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

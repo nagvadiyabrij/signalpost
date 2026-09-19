@@ -61,7 +61,7 @@ export default function SearchPage() {
     setProgress(["Validating organization number...", "Searching public sources..."]);
     
     try {
-      const response = await fetch("http://localhost:8000/api/company/search", {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000"}/api/company/search`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

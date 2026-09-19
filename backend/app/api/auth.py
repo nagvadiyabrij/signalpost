@@ -66,6 +66,25 @@ class TokenResponse(BaseModel):
     user: UserResponse
 
 
+async def get_current_user(credentials: str = Depends(security), db: Session = Depends(get_db)) -> User:
+    """Get the authenticated user from a bearer token."""
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Could not validate credentials",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+    payload = SessionManager.validate_session(credentials)
+    if not payload or not payload.get("sub"):
+        raise credentials_exception
+
+    user = db.query(User).filter(User.id == payload["sub"]).first()
+    if not user:
+        raise credentials_exception
+    if not user.is_active:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Account is deactivated")
+    return user
+
+
 @router.post("/register", response_model=TokenResponse)
 async def register(user_data: UserRegister, db: Session = Depends(get_db)):
     """Register a new user account"""
@@ -114,7 +133,7 @@ async def register(user_data: UserRegister, db: Session = Depends(get_db)):
         action="USER_CREATED",
         target_type="USER",
         target_id=user_id,
-        metadata={"email": user_data.email, "name": user_data.name}
+        metadata_json={"email": user_data.email, "name": user_data.name}
     )
     db.add(audit_log)
     
@@ -417,37 +436,6 @@ async def change_password(
     db.commit()
     
     return {"message": "Password successfully changed"}
-
-
-# Dependency for getting current user from token
-async def get_current_user(credentials: str = Depends(security), db: Session = Depends(get_db)) -> User:
-    """Get current user from JWT token"""
-    credentials_exception = HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Could not validate credentials",
-        headers={"WWW-Authenticate": "Bearer"},
-    )
-    
-    token = credentials
-    payload = SessionManager.validate_session(token)
-    if not payload:
-        raise credentials_exception
-    
-    user_id = payload.get("sub")
-    if not user_id:
-        raise credentials_exception
-    
-    user = db.query(User).filter(User.id == user_id).first()
-    if not user:
-        raise credentials_exception
-    
-    if not user.is_active:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Account is deactivated"
-        )
-    
-    return user
 
 
 async def get_admin_user(current_user: User = Depends(get_current_user)) -> User:

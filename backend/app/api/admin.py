@@ -194,7 +194,7 @@ async def update_user(
         action="USER_UPDATED",
         target_type="USER",
         target_id=user_id,
-        metadata={
+        metadata_json={
             "old_values": old_values,
             "new_values": {
                 "name": user.name,
@@ -345,7 +345,7 @@ async def get_audit_logs(
                 "action": log.action,
                 "target_type": log.target_type,
                 "target_id": log.target_id,
-                "metadata": log.metadata,
+                "metadata": log.metadata_json,
                 "ip_address": log.ip_address,
                 "created_at": log.created_at.isoformat() if log.created_at else None
             }

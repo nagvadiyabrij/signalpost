@@ -20,6 +20,7 @@ class Settings(BaseSettings):
     frontend_port: int = 3000
     
     environment: str = "development"
+    cors_origins: str = "http://localhost:3000,http://127.0.0.1:3000"
     
     class Config:
         env_file = ".env"
