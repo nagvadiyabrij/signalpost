@@ -10,7 +10,7 @@ from app.models.source import Source
 from app.models.search_history import SearchHistory
 from app.models.api_usage import ApiUsage
 from app.database import SessionLocal
-from app.utils.cache import RequestBudget
+from app.utils.cache import get_global_budget
 from datetime import datetime
 import hashlib
 
@@ -26,7 +26,7 @@ class CompanyAgent:
         ]
         self.validator = FactValidator()
         self.identity_verifier = IdentityVerifier()
-        self.request_budget = RequestBudget(max_requests=1800)
+        self.request_budget = get_global_budget()
     
     async def research_company(self, organization_number: str) -> Dict[str, Any]:
         """
@@ -73,13 +73,14 @@ class CompanyAgent:
                 # Search for company
                 search_results = await source.search(normalized_org_number, company_name)
                 
+                # Record search request
+                self.request_budget.record_request(
+                    url=f"{source.name}_search",
+                    method="SEARCH",
+                    status=200
+                )
+                
                 for result in search_results:
-                    # Record request
-                    self.request_budget.record_request(
-                        url=result.get("url", "unknown"),
-                        method="GET",
-                        status=200
-                    )
                     # Verify company identity
                     is_valid, reason, confidence = self.identity_verifier.verify_company_identity(
                         normalized_org_number,
@@ -96,6 +97,13 @@ class CompanyAgent:
                     if not content:
                         warnings.append(f"Could not fetch content from {result['url']}")
                         continue
+                    
+                    # Record successful fetch
+                    self.request_budget.record_request(
+                        url=result["url"],
+                        method="GET",
+                        status=200
+                    )
                     
                     # Extract facts
                     extracted_facts = await source.extract(content, normalized_org_number)

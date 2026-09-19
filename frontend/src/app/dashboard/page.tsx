@@ -10,8 +10,15 @@ interface DashboardStats {
   status: string;
 }
 
+interface BudgetUsage {
+  requests_used: number;
+  requests_remaining: number;
+  usage_percentage: number;
+}
+
 export default function DashboardPage() {
   const [stats, setStats] = useState<DashboardStats | null>(null);
+  const [budget, setBudget] = useState<BudgetUsage | null>(null);
   const [loading, setLoading] = useState(true);
   const [systemHealth, setSystemHealth] = useState({
     registry: "Checking...",
@@ -21,6 +28,7 @@ export default function DashboardPage() {
 
   useEffect(() => {
     fetchStats();
+    fetchBudget();
     checkSystemHealth();
   }, []);
 
@@ -33,6 +41,16 @@ export default function DashboardPage() {
       console.error("Failed to fetch stats:", error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchBudget = async () => {
+    try {
+      const response = await fetch("http://localhost:8000/api/budget");
+      const data = await response.json();
+      setBudget(data.budget);
+    } catch (error) {
+      console.error("Failed to fetch budget:", error);
     }
   };
 
@@ -65,6 +83,18 @@ export default function DashboardPage() {
               </Link>
               <Link href="/dashboard" className="text-gray-700 hover:text-indigo-600 font-medium">
                 Dashboard
+              </Link>
+              <Link href="/history" className="text-gray-700 hover:text-indigo-600">
+                History
+              </Link>
+              <Link href="/sources" className="text-gray-700 hover:text-indigo-600">
+                Sources
+              </Link>
+              <Link href="/how-it-works" className="text-gray-700 hover:text-indigo-600">
+                How It Works
+              </Link>
+              <Link href="/about" className="text-gray-700 hover:text-indigo-600">
+                About
               </Link>
             </div>
           </div>
@@ -149,10 +179,15 @@ export default function DashboardPage() {
             <div>
               <div className="flex justify-between text-sm mb-2">
                 <span className="text-gray-600">Requests Used</span>
-                <span className="font-medium text-gray-900">0 / 2,000</span>
+                <span className="font-medium text-gray-900">
+                  {budget ? `${budget.requests_used} / 1,800` : "Loading..."}
+                </span>
               </div>
               <div className="w-full bg-gray-200 rounded-full h-2">
-                <div className="bg-indigo-600 h-2 rounded-full" style={{ width: "0%" }}></div>
+                <div 
+                  className="bg-indigo-600 h-2 rounded-full transition-all" 
+                  style={{ width: budget ? `${budget.usage_percentage}%` : "0%" }}
+                ></div>
               </div>
             </div>
             <div>

@@ -100,3 +100,11 @@ class RequestBudget:
         """Reset the budget"""
         self.requests_used = 0
         self.request_log = []
+
+
+# Global budget instance
+_global_budget = RequestBudget()
+
+def get_global_budget() -> RequestBudget:
+    """Get the global budget instance"""
+    return _global_budget

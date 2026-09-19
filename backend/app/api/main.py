@@ -246,5 +246,48 @@ async def get_company_sources(organizationNumber: str):
         db.close()
 
 
+@app.get("/api/history")
+async def get_search_history():
+    """Get search history"""
+    from app.database import SessionLocal
+    from app.models.search_history import SearchHistory
+    
+    db = SessionLocal()
+    try:
+        history = db.query(SearchHistory).order_by(
+            SearchHistory.searched_at.desc()
+        ).limit(100).all()
+        
+        return {
+            "status": "success",
+            "history": [
+                {
+                    "id": item.id,
+                    "organization_number": item.organization_number,
+                    "company_name": item.company_name,
+                    "status": item.status,
+                    "searched_at": item.searched_at.isoformat() if item.searched_at else None
+                }
+                for item in history
+            ]
+        }
+    finally:
+        db.close()
+
+
+@app.get("/api/budget")
+async def get_request_budget():
+    """Get current request budget usage"""
+    from app.utils.cache import get_global_budget
+    
+    budget = get_global_budget()
+    usage = budget.get_usage()
+    
+    return {
+        "status": "success",
+        "budget": usage
+    }
+
+
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)

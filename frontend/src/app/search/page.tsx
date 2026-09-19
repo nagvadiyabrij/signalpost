@@ -125,6 +125,9 @@ export default function SearchPage() {
               <Link href="/dashboard" className="text-gray-700 hover:text-indigo-600">
                 Dashboard
               </Link>
+              <Link href="/history" className="text-gray-700 hover:text-indigo-600">
+                History
+              </Link>
               <Link href="/sources" className="text-gray-700 hover:text-indigo-600">
                 Sources
               </Link>
