@@ -4,7 +4,7 @@
 https://github.com/yourusername/signalpost
 
 ## Exact Commit Hash
-cfd394a3ac02c17ba5edad09d90af49c67c6f353
+dec55caced6df0a03b1b2b20f24819a12bedb0ed
 
 ## Primary Run Command
 ```bash

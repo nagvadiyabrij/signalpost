@@ -7,9 +7,20 @@ export default function Home() {
   const [orgNumber, setOrgNumber] = useState("");
 
   const handleSearch = () => {
-    if (orgNumber.trim()) {
-      window.location.href = `/search?org=${orgNumber.trim()}`;
+    const orgNum = orgNumber.trim();
+    
+    // Validate before making request
+    if (!orgNum) {
+      return;
     }
+    
+    // Check if it's exactly 9 digits
+    if (!/^\d{9}$/.test(orgNum)) {
+      alert("Norwegian organization numbers must be exactly 9 digits");
+      return;
+    }
+    
+    window.location.href = `/search?org=${orgNum}`;
   };
 
   return (
@@ -60,12 +71,24 @@ export default function Home() {
           </p>
 
           <div className="max-w-md mx-auto">
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Norwegian Organization Number
+              </label>
+              <p className="text-sm text-gray-500 mb-4">
+                Enter a 9-digit Norwegian organization number (e.g., 987654321)
+              </p>
+            </div>
             <div className="flex gap-4">
               <input
                 type="text"
-                placeholder="Enter 9-digit organization number"
+                placeholder="9-digit number"
                 value={orgNumber}
-                onChange={(e) => setOrgNumber(e.target.value)}
+                onChange={(e) => {
+                  // Only allow digits
+                  const value = e.target.value.replace(/\D/g, '');
+                  setOrgNumber(value);
+                }}
                 onKeyPress={(e) => e.key === "Enter" && handleSearch()}
                 className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                 maxLength={9}
@@ -77,6 +100,11 @@ export default function Home() {
                 Find Company
               </button>
             </div>
+            {orgNumber && orgNumber.length !== 9 && (
+              <p className="text-sm text-amber-600 mt-2">
+                Norwegian organization numbers must be exactly 9 digits
+              </p>
+            )}
           </div>
 
           <div className="mt-12 bg-white rounded-lg shadow-md p-8 max-w-2xl mx-auto">

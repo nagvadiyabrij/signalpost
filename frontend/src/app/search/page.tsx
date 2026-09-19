@@ -77,7 +77,7 @@ export default function SearchPage() {
         setError(data.message || "An error occurred");
         setProgress([]);
       } else if (data.status === "not_found") {
-        setError("Company not found in registry");
+        setError("Company not found in Norwegian registry. Please verify the organization number is correct.");
         setProgress([]);
       } else {
         setCompanyData(data.company);
@@ -100,9 +100,21 @@ export default function SearchPage() {
   };
 
   const handleSearch = () => {
-    if (searchOrgNumber.trim()) {
-      router.push(`/search?org=${searchOrgNumber.trim()}`);
+    const orgNum = searchOrgNumber.trim();
+    
+    // Validate before making request
+    if (!orgNum) {
+      setError("Please enter an organization number");
+      return;
     }
+    
+    // Check if it's exactly 9 digits
+    if (!/^\d{9}$/.test(orgNum)) {
+      setError("Norwegian organization numbers must be exactly 9 digits");
+      return;
+    }
+    
+    router.push(`/search?org=${orgNum}`);
   };
 
   return (
@@ -149,12 +161,24 @@ export default function SearchPage() {
           </h1>
 
           <div className="bg-white rounded-lg shadow-md p-6 mb-8">
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Norwegian Organization Number
+              </label>
+              <p className="text-sm text-gray-500 mb-4">
+                Enter a 9-digit Norwegian organization number (e.g., 987654321)
+              </p>
+            </div>
             <div className="flex gap-4">
               <input
                 type="text"
-                placeholder="Enter 9-digit organization number"
+                placeholder="9-digit number"
                 value={searchOrgNumber}
-                onChange={(e) => setSearchOrgNumber(e.target.value)}
+                onChange={(e) => {
+                  // Only allow digits
+                  const value = e.target.value.replace(/\D/g, '');
+                  setSearchOrgNumber(value);
+                }}
                 onKeyPress={(e) => e.key === "Enter" && handleSearch()}
                 className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                 maxLength={9}
@@ -167,6 +191,11 @@ export default function SearchPage() {
                 {loading ? "Searching..." : "Find Company"}
               </button>
             </div>
+            {searchOrgNumber && searchOrgNumber.length !== 9 && (
+              <p className="text-sm text-amber-600 mt-2">
+                Norwegian organization numbers must be exactly 9 digits
+              </p>
+            )}
           </div>
 
           {loading && (
@@ -191,6 +220,9 @@ export default function SearchPage() {
                 Error
               </h2>
               <p className="text-red-700">{error}</p>
+              <p className="text-sm text-red-600 mt-2">
+                Please enter a valid 9-digit Norwegian organization number.
+              </p>
             </div>
           )}
 
