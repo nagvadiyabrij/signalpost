@@ -1,0 +1,64 @@
+# Dependencies
+node_modules/
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Next.js
+.next/
+out/
+*.log
+
+# Python
+.pytest_cache/
+.coverage
+htmlcov/
+.mypy_cache/
+
+# Data (except profiles directory structure)
+data/profiles/*.json
+!data/profiles/.gitkeep
+
+# Build
+*.tgz

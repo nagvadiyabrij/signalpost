@@ -1,0 +1,11 @@
+fastapi
+uvicorn
+pydantic
+pydantic-settings
+sqlalchemy
+httpx
+beautifulsoup4
+python-dateutil
+python-dotenv
+tenacity
+pytest
