@@ -167,5 +167,84 @@ async def get_stats():
         db.close()
 
 
+@app.get("/api/company/{organizationNumber}/facts")
+async def get_company_facts(organizationNumber: str):
+    """Get all facts for a company"""
+    from app.database import SessionLocal
+    from app.models.company import Company
+    from app.models.fact import Fact
+    
+    db = SessionLocal()
+    try:
+        company = db.query(Company).filter(
+            Company.organization_number == organizationNumber
+        ).first()
+        
+        if not company:
+            raise HTTPException(status_code=404, detail="Company not found")
+        
+        facts = db.query(Fact).filter(
+            Fact.company_id == company.id,
+            Fact.verified == True
+        ).all()
+        
+        return {
+            "status": "success",
+            "organization_number": organizationNumber,
+            "facts": [
+                {
+                    "field": fact.field,
+                    "value": fact.value,
+                    "source_url": fact.source_url,
+                    "source_name": fact.source_name,
+                    "retrieved_at": fact.retrieved_at.isoformat() if fact.retrieved_at else None,
+                    "financial_year": fact.financial_year,
+                    "currency": fact.currency,
+                    "confidence": fact.confidence
+                }
+                for fact in facts
+            ]
+        }
+    finally:
+        db.close()
+
+
+@app.get("/api/company/{organizationNumber}/sources")
+async def get_company_sources(organizationNumber: str):
+    """Get all sources for a company"""
+    from app.database import SessionLocal
+    from app.models.company import Company
+    from app.models.source import Source
+    
+    db = SessionLocal()
+    try:
+        company = db.query(Company).filter(
+            Company.organization_number == organizationNumber
+        ).first()
+        
+        if not company:
+            raise HTTPException(status_code=404, detail="Company not found")
+        
+        sources = db.query(Source).filter(Source.company_id == company.id).all()
+        
+        return {
+            "status": "success",
+            "organization_number": organizationNumber,
+            "sources": [
+                {
+                    "url": source.url,
+                    "name": source.name,
+                    "retrieved_at": source.retrieved_at.isoformat() if source.retrieved_at else None,
+                    "published_at": source.published_at.isoformat() if source.published_at else None,
+                    "updated_at": source.updated_at.isoformat() if source.updated_at else None,
+                    "http_status": source.http_status
+                }
+                for source in sources
+            ]
+        }
+    finally:
+        db.close()
+
+
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)

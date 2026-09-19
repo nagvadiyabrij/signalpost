@@ -193,6 +193,18 @@ export default function CompanyProfilePage() {
               <Link href="/search" className="text-gray-700 hover:text-indigo-600">
                 Search
               </Link>
+              <Link href="/dashboard" className="text-gray-700 hover:text-indigo-600">
+                Dashboard
+              </Link>
+              <Link href="/sources" className="text-gray-700 hover:text-indigo-600">
+                Sources
+              </Link>
+              <Link href="/how-it-works" className="text-gray-700 hover:text-indigo-600">
+                How It Works
+              </Link>
+              <Link href="/about" className="text-gray-700 hover:text-indigo-600">
+                About
+              </Link>
             </div>
           </div>
         </div>
@@ -316,6 +328,48 @@ export default function CompanyProfilePage() {
         </div>
 
         <div className="bg-white rounded-lg shadow-md p-6 mb-8">
+          <h2 className="text-xl font-semibold text-gray-900 mb-4">Financial Information</h2>
+          <div className="space-y-3">
+            <FinancialInfoRow
+              label="Revenue"
+              value={getFactValue("revenue")}
+              fact={getFactWithSource("revenue")}
+              onViewSource={setSelectedSource}
+            />
+            <FinancialInfoRow
+              label="Operating Profit"
+              value={getFactValue("operating_profit")}
+              fact={getFactWithSource("operating_profit")}
+              onViewSource={setSelectedSource}
+            />
+            <FinancialInfoRow
+              label="Profit Before Tax"
+              value={getFactValue("profit_before_tax")}
+              fact={getFactWithSource("profit_before_tax")}
+              onViewSource={setSelectedSource}
+            />
+            <FinancialInfoRow
+              label="Net Income"
+              value={getFactValue("net_income")}
+              fact={getFactWithSource("net_income")}
+              onViewSource={setSelectedSource}
+            />
+            <FinancialInfoRow
+              label="Total Assets"
+              value={getFactValue("total_assets")}
+              fact={getFactWithSource("total_assets")}
+              onViewSource={setSelectedSource}
+            />
+            <FinancialInfoRow
+              label="Equity"
+              value={getFactValue("equity")}
+              fact={getFactWithSource("equity")}
+              onViewSource={setSelectedSource}
+            />
+          </div>
+        </div>
+
+        <div className="bg-white rounded-lg shadow-md p-6 mb-8">
           <h2 className="text-xl font-semibold text-gray-900 mb-4">Sources</h2>
           <div className="space-y-2">
             {sources.map((source, index) => (
@@ -418,6 +472,46 @@ function InfoRow({ label, value, fact, onViewSource, isLink = false }: {
       <span className="text-gray-600 font-medium">{label}:</span>
       <div className="text-right flex-1 ml-4">
         <div className="text-gray-900">{displayValue}</div>
+        {fact && (
+          <button
+            onClick={() => onViewSource({
+              url: fact.source_url,
+              name: fact.source_name,
+              retrieved_at: fact.retrieved_at,
+              http_status: 200
+            })}
+            className="text-xs text-indigo-600 hover:text-indigo-800 mt-1"
+          >
+            Source: {fact.source_name} ({formatDate(fact.retrieved_at)})
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function FinancialInfoRow({ label, value, fact, onViewSource }: {
+  label: string;
+  value: string | null;
+  fact: Fact | undefined;
+  onViewSource: (source: Source) => void;
+}) {
+  if (!value) return null;
+
+  const financialYear = fact?.financial_year;
+  const currency = fact?.currency;
+
+  return (
+    <div className="flex justify-between items-start">
+      <span className="text-gray-600 font-medium">{label}:</span>
+      <div className="text-right flex-1 ml-4">
+        <div className="text-gray-900">{value}</div>
+        {financialYear && (
+          <div className="text-sm text-gray-500">Financial year: {financialYear}</div>
+        )}
+        {currency && (
+          <div className="text-sm text-gray-500">Currency: {currency}</div>
+        )}
         {fact && (
           <button
             onClick={() => onViewSource({

@@ -29,6 +29,12 @@ export default function Home() {
               <Link href="/search" className="text-gray-700 hover:text-indigo-600">
                 Search
               </Link>
+              <Link href="/dashboard" className="text-gray-700 hover:text-indigo-600">
+                Dashboard
+              </Link>
+              <Link href="/sources" className="text-gray-700 hover:text-indigo-600">
+                Sources
+              </Link>
               <Link href="/how-it-works" className="text-gray-700 hover:text-indigo-600">
                 How It Works
               </Link>

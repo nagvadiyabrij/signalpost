@@ -4,7 +4,7 @@
 https://github.com/yourusername/signalpost
 
 ## Exact Commit Hash
-[PENDING - Project created on E:\signalpost, requires git init and commit]
+cfd394a3ac02c17ba5edad09d90af49c67c6f353
 
 ## Primary Run Command
 ```bash

@@ -7,7 +7,10 @@ from app.validators.fact import FactValidator
 from app.models.company import Company
 from app.models.fact import Fact
 from app.models.source import Source
+from app.models.search_history import SearchHistory
+from app.models.api_usage import ApiUsage
 from app.database import SessionLocal
+from app.utils.cache import RequestBudget
 from datetime import datetime
 import hashlib
 
@@ -23,6 +26,7 @@ class CompanyAgent:
         ]
         self.validator = FactValidator()
         self.identity_verifier = IdentityVerifier()
+        self.request_budget = RequestBudget(max_requests=1800)
     
     async def research_company(self, organization_number: str) -> Dict[str, Any]:
         """
@@ -35,6 +39,14 @@ class CompanyAgent:
                 "status": "error",
                 "code": "INVALID_ORGANIZATION_NUMBER",
                 "message": "Invalid Norwegian organization number format"
+            }
+        
+        # Check request budget
+        if not self.request_budget.can_make_request():
+            return {
+                "status": "error",
+                "code": "REQUEST_LIMIT_EXCEEDED",
+                "message": "Request budget exceeded. Please try again later."
             }
         
         # Normalize organization number
@@ -62,6 +74,12 @@ class CompanyAgent:
                 search_results = await source.search(normalized_org_number, company_name)
                 
                 for result in search_results:
+                    # Record request
+                    self.request_budget.record_request(
+                        url=result.get("url", "unknown"),
+                        method="GET",
+                        status=200
+                    )
                     # Verify company identity
                     is_valid, reason, confidence = self.identity_verifier.verify_company_identity(
                         normalized_org_number,
@@ -201,8 +219,24 @@ class CompanyAgent:
             warnings.append(f"Database error: {str(e)}")
         finally:
             db.close()
-        
-        # Stage 4: Build response
+    
+    # Track search history
+    db = SessionLocal()
+    try:
+        search_history = SearchHistory(
+            organization_number=normalized_org_number,
+            company_name=company_info.get("company_name"),
+            status=result.get("status", "unknown")
+        )
+        db.add(search_history)
+        db.commit()
+    except Exception as e:
+        print(f"Failed to track search history: {e}")
+        db.rollback()
+    finally:
+        db.close()
+    
+    # Stage 4: Build response
         response = {
             "status": "success",
             "organization_number": normalized_org_number,
