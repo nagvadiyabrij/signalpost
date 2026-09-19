@@ -9,3 +9,6 @@ python-dateutil
 python-dotenv
 tenacity
 pytest
+bcrypt
+pyjwt
+python-multipart

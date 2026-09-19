@@ -1,5 +1,6 @@
 from pydantic_settings import BaseSettings
 from typing import Optional
+import secrets
 
 
 class Settings(BaseSettings):
@@ -7,6 +8,8 @@ class Settings(BaseSettings):
     openai_api_key: Optional[str] = None
     search_api_key: Optional[str] = None
     search_provider: Optional[str] = None
+    
+    secret_key: str = secrets.token_urlsafe(32)
     
     max_requests: int = 1800
     max_concurrency: int = 5

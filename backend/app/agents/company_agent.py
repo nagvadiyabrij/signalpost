@@ -28,7 +28,12 @@ class CompanyAgent:
         self.identity_verifier = IdentityVerifier()
         self.request_budget = get_global_budget()
     
-    async def research_company(self, organization_number: str) -> Dict[str, Any]:
+    def _generate_id(self) -> str:
+        """Generate a unique ID"""
+        import secrets
+        return secrets.token_urlsafe(36)
+    
+    async def research_company(self, organization_number: str, user_id: Optional[str] = None) -> Dict[str, Any]:
         """
         Research a company by organization number.
         Returns complete company profile with verified facts.
@@ -39,6 +44,8 @@ class CompanyAgent:
             db = SessionLocal()
             try:
                 search_history = SearchHistory(
+                    id=self._generate_id(),
+                    user_id=user_id,
                     organization_number=organization_number,
                     company_name=None,
                     status="error"
@@ -76,6 +83,8 @@ class CompanyAgent:
             db = SessionLocal()
             try:
                 search_history = SearchHistory(
+                    id=self._generate_id(),
+                    user_id=user_id,
                     organization_number=normalized_org_number,
                     company_name=None,
                     status="not_found"

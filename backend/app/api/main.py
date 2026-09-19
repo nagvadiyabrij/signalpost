@@ -1,9 +1,12 @@
-from fastapi import FastAPI, HTTPException, BackgroundTasks
+from fastapi import FastAPI, HTTPException, BackgroundTasks, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import Optional, List, Dict, Any
 from app.agents.company_agent import CompanyAgent
-from app.database import init_db
+from app.database import init_db, SessionLocal
+from app.api import auth, admin, user
+from app.api.auth import get_current_user
+from app.models.user import User
 from app.validators.identity import IdentityVerifier
 import uvicorn
 
