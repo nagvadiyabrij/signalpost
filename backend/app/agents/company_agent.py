@@ -35,6 +35,22 @@ class CompanyAgent:
         """
         # Validate organization number
         if not self.identity_verifier.is_valid_norwegian_org_number(organization_number):
+            # Track invalid search
+            db = SessionLocal()
+            try:
+                search_history = SearchHistory(
+                    organization_number=organization_number,
+                    company_name=None,
+                    status="error"
+                )
+                db.add(search_history)
+                db.commit()
+            except Exception as e:
+                print(f"Failed to track search history: {e}")
+                db.rollback()
+            finally:
+                db.close()
+            
             return {
                 "status": "error",
                 "code": "INVALID_ORGANIZATION_NUMBER",
@@ -56,6 +72,22 @@ class CompanyAgent:
         company_info = await self._resolve_company(normalized_org_number)
         
         if not company_info:
+            # Track failed search
+            db = SessionLocal()
+            try:
+                search_history = SearchHistory(
+                    organization_number=normalized_org_number,
+                    company_name=None,
+                    status="not_found"
+                )
+                db.add(search_history)
+                db.commit()
+            except Exception as e:
+                print(f"Failed to track search history: {e}")
+                db.rollback()
+            finally:
+                db.close()
+            
             return {
                 "status": "not_found",
                 "message": "Company not found in primary registry"
@@ -222,29 +254,22 @@ class CompanyAgent:
             
             db.commit()
             
+            # Track search history
+            search_history = SearchHistory(
+                organization_number=normalized_org_number,
+                company_name=company_info.get("company_name"),
+                status="success"
+            )
+            db.add(search_history)
+            db.commit()
+            
         except Exception as e:
             db.rollback()
             warnings.append(f"Database error: {str(e)}")
         finally:
             db.close()
-    
-    # Track search history
-    db = SessionLocal()
-    try:
-        search_history = SearchHistory(
-            organization_number=normalized_org_number,
-            company_name=company_info.get("company_name"),
-            status=result.get("status", "unknown")
-        )
-        db.add(search_history)
-        db.commit()
-    except Exception as e:
-        print(f"Failed to track search history: {e}")
-        db.rollback()
-    finally:
-        db.close()
-    
-    # Stage 4: Build response
+        
+        # Stage 4: Build response
         response = {
             "status": "success",
             "organization_number": normalized_org_number,
