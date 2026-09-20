@@ -26,13 +26,7 @@ export default function DashboardPage() {
     ai: "Not configured"
   });
 
-  useEffect(() => {
-    fetchStats();
-    fetchBudget();
-    checkSystemHealth();
-  }, []);
-
-  const fetchStats = async () => {
+  async function fetchStats() {
     try {
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000"}/api/stats`);
       const data = await response.json();
@@ -42,9 +36,9 @@ export default function DashboardPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }
 
-  const fetchBudget = async () => {
+  async function fetchBudget() {
     try {
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000"}/api/budget`);
       const data = await response.json();
@@ -52,17 +46,26 @@ export default function DashboardPage() {
     } catch (error) {
       console.error("Failed to fetch budget:", error);
     }
-  };
+  }
 
-  const checkSystemHealth = async () => {
+  async function checkSystemHealth() {
     // Check registry health
     try {
-      const response = await fetch("https://data.brreg.no/enhetsregisteret/api/");
+      await fetch("https://data.brreg.no/enhetsregisteret/api/");
       setSystemHealth(prev => ({ ...prev, registry: "Connected" }));
     } catch {
       setSystemHealth(prev => ({ ...prev, registry: "Disconnected" }));
     }
-  };
+  }
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      void fetchStats();
+      void fetchBudget();
+      void checkSystemHealth();
+    }, 0);
+    return () => window.clearTimeout(timer);
+  }, []);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">

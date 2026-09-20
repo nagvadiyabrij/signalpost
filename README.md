@@ -114,6 +114,23 @@ The application will be available at:
 - Frontend: http://localhost:3000
 - Backend API: http://localhost:8000
 
+### Local Hosted Links
+
+- Website: [http://localhost:3000](http://localhost:3000)
+- API health check: [http://localhost:8000/api/health](http://localhost:8000/api/health)
+- Seeded example profile: [http://localhost:3000/company/923609016](http://localhost:3000/company/923609016)
+
+### Authentication
+
+- Login: [http://localhost:3000/login](http://localhost:3000/login)
+- Register: [http://localhost:3000/register](http://localhost:3000/register)
+- Admin dashboard: [http://localhost:3000/admin](http://localhost:3000/admin)
+
+Create or promote an administrator from the `backend` directory:
+```bash
+python -m app.create_admin --email admin@example.com --name Admin
+```
+
 ### Option 2: Docker (Recommended)
 
 ```bash

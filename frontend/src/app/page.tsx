@@ -2,9 +2,11 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 export default function Home() {
   const [orgNumber, setOrgNumber] = useState("");
+  const router = useRouter();
 
   const handleSearch = () => {
     const orgNum = orgNumber.trim();
@@ -20,7 +22,7 @@ export default function Home() {
       return;
     }
     
-    window.location.href = `/search?org=${orgNum}`;
+    router.push(`/search?org=${orgNum}`);
   };
 
   return (
@@ -54,6 +56,15 @@ export default function Home() {
               </Link>
               <Link href="/about" className="text-gray-700 hover:text-indigo-600">
                 About
+              </Link>
+              <Link href="/login" className="text-gray-700 hover:text-indigo-600">
+                Login
+              </Link>
+              <Link href="/register" className="text-gray-700 hover:text-indigo-600">
+                Register
+              </Link>
+              <Link href="/admin" className="text-gray-700 hover:text-indigo-600">
+                Admin
               </Link>
             </div>
           </div>

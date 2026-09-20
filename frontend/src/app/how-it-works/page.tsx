@@ -51,7 +51,7 @@ export default function HowItWorksPage() {
               </h2>
               <p className="text-gray-600">
                 You enter a Norwegian organization number (9 digits). Our system validates the format 
-                and ensures it's a proper Norwegian organization number.
+                and ensures it&apos;s a proper Norwegian organization number.
               </p>
             </div>
 

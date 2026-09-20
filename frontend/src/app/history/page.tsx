@@ -19,7 +19,7 @@ export default function HistoryPage() {
     fetchHistory();
   }, []);
 
-  const fetchHistory = async () => {
+  async function fetchHistory() {
     try {
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000"}/api/history`);
       const data = await response.json();
@@ -29,7 +29,7 @@ export default function HistoryPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleString("en-GB", {

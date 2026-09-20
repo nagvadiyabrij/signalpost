@@ -3,6 +3,7 @@ from pydantic import BaseModel
 from typing import Optional, List
 from datetime import datetime
 from sqlalchemy.orm import Session
+from sqlalchemy import text
 from app.database import get_db
 from app.models.user import User, UserRole
 from app.models.company import Company
@@ -40,8 +41,8 @@ class CompanyResponse(BaseModel):
     id: int
     organization_number: str
     name: str
-    status: str
-    company_type: str
+    status: Optional[str]
+    company_type: Optional[str]
     created_at: datetime
     last_verified_at: Optional[datetime]
 
@@ -50,11 +51,11 @@ class FactResponse(BaseModel):
     id: int
     company_id: int
     field: str
-    value: str
+    value: Optional[str]
     source_url: str
     source_name: str
     verified: bool
-    confidence: float
+    confidence: Optional[float]
     financial_year: Optional[int]
     currency: Optional[str]
     retrieved_at: datetime
@@ -64,7 +65,7 @@ class SourceResponse(BaseModel):
     id: int
     url: str
     name: str
-    http_status: int
+    http_status: Optional[int]
     retrieved_at: datetime
 
 
@@ -367,7 +368,7 @@ async def get_system_health(admin_user: User = Depends(get_admin_user)):
     from app.database import SessionLocal
     db = SessionLocal()
     try:
-        db.execute("SELECT 1")
+        db.execute(text("SELECT 1"))
         db_status = "Connected"
     except:
         db_status = "Disconnected"

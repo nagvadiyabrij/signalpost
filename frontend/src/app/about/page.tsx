@@ -70,7 +70,7 @@ export default function AboutPage() {
               </li>
               <li>
                 <strong>No Fabrication:</strong> We never invent information. If something cannot 
-                be verified, it's shown as unavailable.
+                be verified, it&apos;s shown as unavailable.
               </li>
               <li>
                 <strong>Identity Verification:</strong> We rigorously verify that information 

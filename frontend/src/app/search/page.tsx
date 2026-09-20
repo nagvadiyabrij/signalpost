@@ -1,41 +1,12 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { Suspense, useState, useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 
-interface CompanyData {
-  organization_number: string;
-  name: string;
-  status: string;
-  company_type: string;
-  registration_date: string;
-  business_address: string;
-  postal_address: string;
-  municipality: string;
-  industry: string;
-  industry_code: string;
-}
+const STARTER_ORGANIZATION_NUMBER = "923609016";
 
-interface Fact {
-  field: string;
-  value: string;
-  source_url: string;
-  source_name: string;
-  retrieved_at: string;
-  financial_year?: number;
-  currency?: string;
-  confidence: number;
-}
-
-interface Source {
-  url: string;
-  name: string;
-  retrieved_at: string;
-  http_status: number;
-}
-
-export default function SearchPage() {
+function SearchContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const orgNumber = searchParams.get("org") || "";
@@ -43,19 +14,10 @@ export default function SearchPage() {
   const [searchOrgNumber, setSearchOrgNumber] = useState(orgNumber);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [companyData, setCompanyData] = useState<CompanyData | null>(null);
-  const [facts, setFacts] = useState<Fact[]>([]);
-  const [sources, setSources] = useState<Source[]>([]);
   const [warnings, setWarnings] = useState<string[]>([]);
   const [progress, setProgress] = useState<string[]>([]);
 
-  useEffect(() => {
-    if (orgNumber) {
-      performSearch(orgNumber);
-    }
-  }, [orgNumber]);
-
-  const performSearch = async (orgNum: string) => {
+  async function performSearch(orgNum: string) {
     setLoading(true);
     setError(null);
     setProgress(["Validating organization number...", "Searching public sources..."]);
@@ -80,9 +42,6 @@ export default function SearchPage() {
         setError("Company not found in Norwegian registry. Please verify the organization number is correct.");
         setProgress([]);
       } else {
-        setCompanyData(data.company);
-        setFacts(data.facts || []);
-        setSources(data.sources || []);
         setWarnings(data.warnings || []);
         setProgress(["Company profile ready"]);
         
@@ -91,13 +50,21 @@ export default function SearchPage() {
           router.push(`/company/${orgNum}`);
         }, 1000);
       }
-    } catch (err) {
+    } catch {
       setError("Failed to connect to the server. Please ensure the backend is running.");
       setProgress([]);
     } finally {
       setLoading(false);
     }
-  };
+  }
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      if (orgNumber) void performSearch(orgNumber);
+    }, 0);
+    return () => window.clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [orgNumber]);
 
   const handleSearch = () => {
     const orgNum = searchOrgNumber.trim();
@@ -166,13 +133,13 @@ export default function SearchPage() {
                 Norwegian Organization Number
               </label>
               <p className="text-sm text-gray-500 mb-4">
-                Enter a 9-digit Norwegian organization number (e.g., 987654321)
+                Enter a 9-digit Norwegian organization number, or try the bundled starter profile.
               </p>
             </div>
             <div className="flex gap-4">
               <input
                 type="text"
-                placeholder="9-digit number"
+                placeholder={STARTER_ORGANIZATION_NUMBER}
                 value={searchOrgNumber}
                 onChange={(e) => {
                   // Only allow digits
@@ -191,6 +158,13 @@ export default function SearchPage() {
                 {loading ? "Searching..." : "Find Company"}
               </button>
             </div>
+            <button
+              type="button"
+              onClick={() => setSearchOrgNumber(STARTER_ORGANIZATION_NUMBER)}
+              className="mt-3 text-sm text-indigo-600 hover:text-indigo-800"
+            >
+              Try bundled data: {STARTER_ORGANIZATION_NUMBER}
+            </button>
             {searchOrgNumber && searchOrgNumber.length !== 9 && (
               <p className="text-sm text-amber-600 mt-2">
                 Norwegian organization numbers must be exactly 9 digits
@@ -220,9 +194,6 @@ export default function SearchPage() {
                 Error
               </h2>
               <p className="text-red-700">{error}</p>
-              <p className="text-sm text-red-600 mt-2">
-                Please enter a valid 9-digit Norwegian organization number.
-              </p>
             </div>
           )}
 
@@ -241,5 +212,13 @@ export default function SearchPage() {
         </div>
       </main>
     </div>
+  );
+}
+
+export default function SearchPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100" />}>
+      <SearchContent />
+    </Suspense>
   );
 }

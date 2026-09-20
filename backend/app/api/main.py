@@ -7,12 +7,19 @@ from app.database import init_db, SessionLocal
 from app.api import auth, admin, user
 from app.api.auth import get_current_user
 from app.models.user import User
+from app.models.company import Company
 from app.validators.identity import IdentityVerifier
 from app.config import settings
 import uvicorn
 
 
 app = FastAPI(title="Signalpost API", version="1.0.0")
+
+# Register the authenticated and administration endpoints.  Importing a router
+# alone does not make its routes available in FastAPI.
+app.include_router(auth.router)
+app.include_router(user.router)
+app.include_router(admin.router)
 
 # CORS middleware
 app.add_middleware(
@@ -44,6 +51,60 @@ class CompanySearchResponse(BaseModel):
     message: Optional[str] = None
 
 
+def _cached_company_response(db, company: Company) -> Dict[str, Any]:
+    """Build the public profile response for a company already in SQLite."""
+    from app.models.fact import Fact
+    from app.models.source import Source
+
+    facts = db.query(Fact).filter(Fact.company_id == company.id, Fact.verified == True).all()
+    sources = db.query(Source).filter(Source.company_id == company.id).all()
+    return {
+        "status": "success",
+        "organization_number": company.organization_number,
+        "company": {
+            "organization_number": company.organization_number,
+            "name": company.name,
+            "status": company.status,
+            "company_type": company.company_type,
+            "registration_date": company.registration_date,
+            "business_address": company.business_address,
+            "postal_address": company.postal_address,
+            "municipality": company.municipality,
+            "industry": company.industry,
+            "industry_code": company.industry_code,
+            "website": company.website,
+            "phone": company.phone,
+            "email": company.email,
+            "description": company.description,
+            "parent_company": company.parent_company,
+            "last_verified_at": company.last_verified_at.isoformat() if company.last_verified_at else None,
+        },
+        "facts": [
+            {
+                "field": fact.field,
+                "value": fact.value,
+                "source_url": fact.source_url,
+                "source_name": fact.source_name,
+                "retrieved_at": fact.retrieved_at.isoformat() if fact.retrieved_at else None,
+                "financial_year": fact.financial_year,
+                "currency": fact.currency,
+                "confidence": fact.confidence,
+            }
+            for fact in facts
+        ],
+        "sources": [
+            {
+                "url": source.url,
+                "name": source.name,
+                "retrieved_at": source.retrieved_at.isoformat() if source.retrieved_at else None,
+                "http_status": source.http_status,
+            }
+            for source in sources
+        ],
+        "warnings": ["Showing the latest verified profile saved in the local database."],
+    }
+
+
 @app.get("/api/health")
 async def health_check():
     """Health check endpoint"""
@@ -64,6 +125,17 @@ async def search_company(request: CompanySearchRequest, background_tasks: Backgr
             code="INVALID_ORGANIZATION_NUMBER",
             message="Invalid Norwegian organization number format. Please enter a 9-digit number."
         )
+
+    normalized_org_number = verifier._normalize_org_number(request.organization_number)
+    db = SessionLocal()
+    try:
+        cached_company = db.query(Company).filter(
+            Company.organization_number == normalized_org_number
+        ).first()
+        if cached_company:
+            return CompanySearchResponse(**_cached_company_response(db, cached_company))
+    finally:
+        db.close()
     
     # Research company
     agent = CompanyAgent()

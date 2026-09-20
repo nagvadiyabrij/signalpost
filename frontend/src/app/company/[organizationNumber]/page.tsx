@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import Link from "next/link";
 
 interface CompanyData {
@@ -41,9 +41,17 @@ interface Source {
   http_status: number;
 }
 
+function formatDate(dateString: string) {
+  if (!dateString) return "N/A";
+  return new Date(dateString).toLocaleDateString("en-GB", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric"
+  });
+}
+
 export default function CompanyProfilePage() {
   const params = useParams();
-  const router = useRouter();
   const organizationNumber = params.organizationNumber as string;
   
   const [loading, setLoading] = useState(true);
@@ -53,11 +61,7 @@ export default function CompanyProfilePage() {
   const [sources, setSources] = useState<Source[]>([]);
   const [selectedSource, setSelectedSource] = useState<Source | null>(null);
 
-  useEffect(() => {
-    fetchCompanyData();
-  }, [organizationNumber]);
-
-  const fetchCompanyData = async () => {
+  async function fetchCompanyData() {
     setLoading(true);
     setError(null);
     
@@ -79,12 +83,18 @@ export default function CompanyProfilePage() {
       } else {
         setError("Failed to load company data");
       }
-    } catch (err) {
+    } catch {
       setError("Failed to connect to the server. Please ensure the backend is running.");
     } finally {
       setLoading(false);
     }
-  };
+  }
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => void fetchCompanyData(), 0);
+    return () => window.clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [organizationNumber]);
 
   const handleRefresh = () => {
     fetchCompanyData();
@@ -97,25 +107,6 @@ export default function CompanyProfilePage() {
 
   const getFactWithSource = (fieldName: string) => {
     return facts.find(f => f.field === fieldName);
-  };
-
-  const formatDate = (dateString: string) => {
-    if (!dateString) return "N/A";
-    return new Date(dateString).toLocaleDateString("en-GB", {
-      day: "2-digit",
-      month: "short",
-      year: "numeric"
-    });
-  };
-
-  const formatCurrency = (value: string, currency?: string) => {
-    if (!value) return "N/A";
-    const numValue = parseFloat(value);
-    if (isNaN(numValue)) return value;
-    return new Intl.NumberFormat("no-NO", {
-      style: "currency",
-      currency: currency || "NOK"
-    }).format(numValue);
   };
 
   if (loading) {

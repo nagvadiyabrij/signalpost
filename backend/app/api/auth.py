@@ -66,14 +66,14 @@ class TokenResponse(BaseModel):
     user: UserResponse
 
 
-async def get_current_user(credentials: str = Depends(security), db: Session = Depends(get_db)) -> User:
+async def get_current_user(credentials=Depends(security), db: Session = Depends(get_db)) -> User:
     """Get the authenticated user from a bearer token."""
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
         headers={"WWW-Authenticate": "Bearer"},
     )
-    payload = SessionManager.validate_session(credentials)
+    payload = SessionManager.validate_session(credentials.credentials)
     if not payload or not payload.get("sub"):
         raise credentials_exception
 
@@ -141,7 +141,7 @@ async def register(user_data: UserRegister, db: Session = Depends(get_db)):
     db.refresh(new_user)
     
     # Create session
-    session_data = SessionManager.create_session({
+    session_data = SessionManager.create_session(user_id, {
         "sub": user_id,
         "role": new_user.role.value,
         "name": new_user.name
@@ -205,7 +205,7 @@ async def login(login_data: UserLogin, db: Session = Depends(get_db)):
     login_rate_limiter.record_attempt(login_data.email, True)
     
     # Create session
-    session_data = SessionManager.create_session({
+    session_data = SessionManager.create_session(user.id, {
         "sub": user.id,
         "role": user.role.value,
         "name": user.name

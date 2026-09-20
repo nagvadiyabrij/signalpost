@@ -265,6 +265,7 @@ class CompanyAgent:
             
             # Track search history
             search_history = SearchHistory(
+                id=self._generate_id(),
                 organization_number=normalized_org_number,
                 company_name=company_info.get("company_name"),
                 status="success"
