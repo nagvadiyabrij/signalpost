@@ -28,10 +28,10 @@ class CompanyAgent:
         self.identity_verifier = IdentityVerifier()
         self.request_budget = get_global_budget()
     
-    def _generate_id(self) -> str:
+    def _generate_id(self) -> int:
         """Generate a unique ID"""
         import secrets
-        return secrets.token_urlsafe(36)
+        return secrets.randbelow(2_000_000_000) + 1
     
     async def research_company(self, organization_number: str, user_id: Optional[str] = None) -> Dict[str, Any]:
         """

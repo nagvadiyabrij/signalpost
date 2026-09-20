@@ -91,8 +91,11 @@ class BrregAdapter(SourceAdapter):
         if not address_data:
             return None
         
+        address_lines = address_data.get("adresse") or []
+        if isinstance(address_lines, str):
+            address_lines = [address_lines]
         parts = [
-            address_data.get("adresse"),
+            *address_lines,
             address_data.get("postnummer"),
             address_data.get("poststed"),
             address_data.get("kommune"),

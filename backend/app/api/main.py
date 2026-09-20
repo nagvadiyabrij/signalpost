@@ -11,6 +11,7 @@ from app.models.company import Company
 from app.validators.identity import IdentityVerifier
 from app.config import settings
 import uvicorn
+from datetime import datetime
 
 
 app = FastAPI(title="Signalpost API", version="1.0.0")
@@ -105,6 +106,50 @@ def _cached_company_response(db, company: Company) -> Dict[str, Any]:
     }
 
 
+async def _refresh_registry_details(db, company: Company) -> None:
+    """Fill missing cached fields from the official registry without replacing verified data."""
+    if company.business_address or company.postal_address:
+        return
+
+    from app.sources.brreg import BrregAdapter
+    from app.models.fact import Fact
+    from app.models.source import Source
+    import httpx
+
+    client = httpx.AsyncClient(timeout=15.0)
+    try:
+        result = await BrregAdapter(client).search(company.organization_number)
+    finally:
+        await client.aclose()
+    if not result:
+        return
+
+    registry = result[0]
+    for field in (
+        "status", "company_type", "registration_date", "business_address",
+        "postal_address", "municipality", "industry", "industry_code",
+    ):
+        if getattr(company, field, None) is None and registry.get(field) is not None:
+            setattr(company, field, registry[field])
+
+    source_url = f"https://data.brreg.no/enhetsregisteret/api/enheter/{company.organization_number}"
+    source = db.query(Source).filter(Source.company_id == company.id, Source.url == source_url).first()
+    retrieved_at = datetime.utcnow()
+    if not source:
+        source = Source(company_id=company.id, url=source_url, name="Brønnøysundregistrene", retrieved_at=retrieved_at, http_status=200)
+        db.add(source)
+
+    for field in ("business_address", "postal_address", "registration_date"):
+        value = registry.get(field)
+        if value is None:
+            continue
+        exists = db.query(Fact).filter(Fact.company_id == company.id, Fact.field == field, Fact.source_url == source_url).first()
+        if not exists:
+            db.add(Fact(company_id=company.id, field=field, value=str(value), source_url=source_url, source_name="Brønnøysundregistrene", retrieved_at=retrieved_at, confidence=1.0, verified=True))
+    company.last_verified_at = retrieved_at
+    db.commit()
+
+
 @app.get("/api/health")
 async def health_check():
     """Health check endpoint"""
@@ -133,6 +178,7 @@ async def search_company(request: CompanySearchRequest, background_tasks: Backgr
             Company.organization_number == normalized_org_number
         ).first()
         if cached_company:
+            await _refresh_registry_details(db, cached_company)
             return CompanySearchResponse(**_cached_company_response(db, cached_company))
     finally:
         db.close()
@@ -168,6 +214,8 @@ async def get_company(organization_number: str):
         
         if not company:
             raise HTTPException(status_code=404, detail="Company not found")
+
+        await _refresh_registry_details(db, company)
         
         facts = db.query(Fact).filter(Fact.company_id == company.id, Fact.verified == True).all()
         sources = db.query(Source).filter(Source.company_id == company.id).all()

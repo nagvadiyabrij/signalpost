@@ -7,7 +7,7 @@ from app.database import Base
 class SearchHistory(Base):
     __tablename__ = "search_history"
     
-    id = Column(String(36), primary_key=True, index=True)  # UUID
+    id = Column(Integer, primary_key=True, index=True)
     user_id = Column(String(36), ForeignKey("users.id"), nullable=True, index=True)
     organization_number = Column(String(20), nullable=False, index=True)
     company_name = Column(String(500))
