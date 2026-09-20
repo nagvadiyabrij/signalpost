@@ -27,10 +27,17 @@ export default function RegisterPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form),
       });
-      const data = await response.json();
-      if (!response.ok) {
-        throw new Error(data.detail || "Unable to create account");
+      const responseText = await response.text();
+      let data: { detail?: string; message?: string; access_token?: string; user?: unknown };
+      try {
+        data = JSON.parse(responseText);
+      } catch {
+        throw new Error(`Server returned an invalid response (${response.status})`);
       }
+      if (!response.ok) {
+        throw new Error(data.detail || data.message || "Unable to create account");
+      }
+      if (!data.access_token || !data.user) throw new Error("Server returned an incomplete registration response");
       localStorage.setItem("signalpost_access_token", data.access_token);
       localStorage.setItem("signalpost_user", JSON.stringify(data.user));
       router.push("/");

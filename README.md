@@ -112,6 +112,7 @@ npm run dev
 
 ### Website Links
 
+- Public demo: [https://long-sloths-cross.loca.lt](https://long-sloths-cross.loca.lt) *(temporary LocalTunnel URL)*
 - Website: [http://127.0.0.1:3000](http://127.0.0.1:3000)
 - Login: [http://127.0.0.1:3000/login](http://127.0.0.1:3000/login)
 - Companies: [http://127.0.0.1:3000/companies](http://127.0.0.1:3000/companies)
