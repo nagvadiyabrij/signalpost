@@ -1,7 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  allowedDevOrigins: ["metal-signs-camp.loca.lt"],
+  allowedDevOrigins: ["shy-keys-fetch.loca.lt"],
 };
 
 export default nextConfig;
