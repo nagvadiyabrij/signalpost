@@ -110,10 +110,6 @@ cd frontend
 npm run dev
 ```
 
-### Project Repository
-
-- GitHub: [https://github.com/nagvadiyabrij/signalpost](https://github.com/nagvadiyabrij/signalpost)
-
 ### Authentication
 
 - Login: `/login`
