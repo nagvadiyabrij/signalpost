@@ -110,21 +110,15 @@ cd frontend
 npm run dev
 ```
 
-The application will be available at:
-- Frontend: http://localhost:3000
-- Backend API: http://localhost:8000
+### Project Repository
 
-### Local Hosted Links
-
-- Website: [http://localhost:3000](http://localhost:3000)
-- API health check: [http://localhost:8000/api/health](http://localhost:8000/api/health)
-- Seeded example profile: [http://localhost:3000/company/923609016](http://localhost:3000/company/923609016)
+- GitHub: [https://github.com/nagvadiyabrij/signalpost](https://github.com/nagvadiyabrij/signalpost)
 
 ### Authentication
 
-- Login: [http://localhost:3000/login](http://localhost:3000/login)
-- Register: [http://localhost:3000/register](http://localhost:3000/register)
-- Admin dashboard: [http://localhost:3000/admin](http://localhost:3000/admin)
+- Login: `/login`
+- Register: `/register`
+- Admin dashboard: `/admin`
 
 Create or promote an administrator from the `backend` directory:
 ```bash
@@ -137,15 +131,11 @@ python -m app.create_admin --email admin@example.com --name Admin
 docker-compose up --build
 ```
 
-The application will be available at:
-- Frontend: http://localhost:3000
-- Backend API: http://localhost:8000
-
 ## Usage
 
 ### Web Interface
 
-1. Open http://localhost:3000
+1. Open the frontend URL configured for your environment.
 2. Enter a Norwegian organization number (9 digits)
 3. Click "Find Company"
 4. View the company profile with verified facts and sources
@@ -154,7 +144,7 @@ The application will be available at:
 
 **Search for Company:**
 ```bash
-POST http://localhost:8000/api/company/search
+POST `/api/company/search`
 Content-Type: application/json
 
 {
@@ -164,17 +154,17 @@ Content-Type: application/json
 
 **Get Company Profile:**
 ```bash
-GET http://localhost:8000/api/company/{organization_number}
+GET `/api/company/{organization_number}`
 ```
 
 **Health Check:**
 ```bash
-GET http://localhost:8000/api/health
+GET `/api/health`
 ```
 
 **System Stats:**
 ```bash
-GET http://localhost:8000/api/stats
+GET `/api/stats`
 ```
 
 ### CLI (Generate Profiles)
@@ -311,7 +301,7 @@ npm test
 
 ### Manual Testing
 1. Start both frontend and backend
-2. Navigate to http://localhost:3000
+2. Navigate to the frontend URL configured for your environment.
 3. Test with a real Norwegian organization number
 4. Verify company identity, facts, and sources
 5. Check source links open correctly
