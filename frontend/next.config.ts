@@ -1,7 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  allowedDevOrigins: ["shy-keys-fetch.loca.lt"],
+  allowedDevOrigins: ["cute-rings-listen.loca.lt"],
 };
 
 export default nextConfig;

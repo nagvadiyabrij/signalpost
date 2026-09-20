@@ -112,7 +112,7 @@ npm run dev
 
 ### Website Links
 
-- Public demo: [https://shy-keys-fetch.loca.lt](https://shy-keys-fetch.loca.lt) *(temporary LocalTunnel URL)*
+- Public demo: [https://cute-rings-listen.loca.lt](https://cute-rings-listen.loca.lt) *(temporary LocalTunnel URL)*
 - Website: [http://127.0.0.1:3000](http://127.0.0.1:3000)
 - Login: [http://127.0.0.1:3000/login](http://127.0.0.1:3000/login)
 - Companies: [http://127.0.0.1:3000/companies](http://127.0.0.1:3000/companies)
