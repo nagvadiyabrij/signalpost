@@ -110,6 +110,13 @@ cd frontend
 npm run dev
 ```
 
+### Website Links
+
+- Website: [http://127.0.0.1:3000](http://127.0.0.1:3000)
+- Login: [http://127.0.0.1:3000/login](http://127.0.0.1:3000/login)
+- Companies: [http://127.0.0.1:3000/companies](http://127.0.0.1:3000/companies)
+- Admin: [http://127.0.0.1:3000/admin](http://127.0.0.1:3000/admin)
+
 ### Authentication
 
 - Login: `/login`
