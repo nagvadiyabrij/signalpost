@@ -6,6 +6,7 @@ one working profile without inventing company data or requiring a live call.
 """
 
 from datetime import datetime
+import gzip
 import json
 from pathlib import Path
 
@@ -25,6 +26,21 @@ def seed_starter_data(db: Session) -> None:
     """Insert the verified public snapshot once; leave existing data intact."""
     if db.query(Company).filter(Company.organization_number == DEMO_ORG_NUMBER).first():
         return
+
+    universe = Path(__file__).resolve().parents[2] / "signalpost-starter-kit" / "signalpost-starter-kit" / "data" / "signalpost-universe.jsonl.gz"
+    if universe.is_file():
+        from app.import_profiles import import_profile
+
+        imported = 0
+        with gzip.open(universe, "rt", encoding="utf-8") as universe_file:
+            for index, line in enumerate(universe_file):
+                if index >= 100:
+                    break
+                if line.strip() and import_profile(db, json.loads(line)):
+                    imported += 1
+        if imported:
+            db.commit()
+            return
 
     fixture = Path(__file__).resolve().parents[2] / "signalpost-starter-kit" / "signalpost-starter-kit" / "tests" / "fixtures" / "discovery-profiles.jsonl"
     if fixture.is_file():

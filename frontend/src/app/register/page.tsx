@@ -33,7 +33,7 @@ export default function RegisterPage() {
       }
       localStorage.setItem("signalpost_access_token", data.access_token);
       localStorage.setItem("signalpost_user", JSON.stringify(data.user));
-      router.push("/dashboard");
+      router.push("/");
     } catch (submitError) {
       setError(submitError instanceof Error ? submitError.message : "Unable to create account");
     } finally {

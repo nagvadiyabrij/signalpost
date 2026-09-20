@@ -7,20 +7,20 @@ import Link from "next/link";
 interface CompanyData {
   organization_number: string;
   name: string;
-  status: string;
-  company_type: string;
-  registration_date: string;
-  business_address: string;
-  postal_address: string;
-  municipality: string;
-  industry: string;
-  industry_code: string;
-  website: string;
-  phone: string;
-  email: string;
-  description: string;
-  parent_company: string;
-  last_verified_at: string;
+  status: string | null;
+  company_type: string | null;
+  registration_date: string | null;
+  business_address: string | null;
+  postal_address: string | null;
+  municipality: string | null;
+  industry: string | null;
+  industry_code: string | null;
+  website: string | null;
+  phone: string | null;
+  email: string | null;
+  description: string | null;
+  parent_company: string | null;
+  last_verified_at: string | null;
 }
 
 interface Fact {
@@ -41,7 +41,7 @@ interface Source {
   http_status: number;
 }
 
-function formatDate(dateString: string) {
+function formatDate(dateString: string | null) {
   if (!dateString) return "N/A";
   return new Date(dateString).toLocaleDateString("en-GB", {
     day: "2-digit",
@@ -104,6 +104,8 @@ export default function CompanyProfilePage() {
     const fact = facts.find(f => f.field === fieldName);
     return fact ? fact.value : null;
   };
+
+  const valueFromCompanyOrFact = (value: string | null, fieldName: string) => value || getFactValue(fieldName);
 
   const getFactWithSource = (fieldName: string) => {
     return facts.find(f => f.field === fieldName);
@@ -245,8 +247,8 @@ export default function CompanyProfilePage() {
             <div className="space-y-3">
               <InfoRow
                 label="Company Type"
-                value={companyData.company_type}
-                fact={getFactWithSource("company_type")}
+                value={valueFromCompanyOrFact(companyData.company_type, "legal_form")}
+                fact={getFactWithSource("company_type") || getFactWithSource("legal_form")}
                 onViewSource={setSelectedSource}
               />
               <InfoRow
@@ -257,20 +259,26 @@ export default function CompanyProfilePage() {
               />
               <InfoRow
                 label="Industry"
-                value={companyData.industry}
-                fact={getFactWithSource("industry")}
+                value={valueFromCompanyOrFact(companyData.industry, "industry_label")}
+                fact={getFactWithSource("industry") || getFactWithSource("industry_label")}
                 onViewSource={setSelectedSource}
               />
               <InfoRow
                 label="Industry Code"
-                value={companyData.industry_code}
+                value={valueFromCompanyOrFact(companyData.industry_code, "industry_code")}
                 fact={getFactWithSource("industry_code")}
                 onViewSource={setSelectedSource}
               />
               <InfoRow
                 label="Municipality"
-                value={companyData.municipality}
+                value={valueFromCompanyOrFact(companyData.municipality, "municipality")}
                 fact={getFactWithSource("municipality")}
+                onViewSource={setSelectedSource}
+              />
+              <InfoRow
+                label="Employees"
+                value={getFactValue("employees")}
+                fact={getFactWithSource("employees")}
                 onViewSource={setSelectedSource}
               />
             </div>
@@ -360,6 +368,9 @@ export default function CompanyProfilePage() {
               fact={getFactWithSource("equity")}
               onViewSource={setSelectedSource}
             />
+            {!facts.some((fact) => ["revenue", "operating_profit", "profit_before_tax", "net_income", "total_assets", "equity"].includes(fact.field)) && (
+              <p className="text-gray-600">No verified financial filing is available for this company.</p>
+            )}
           </div>
         </div>
 

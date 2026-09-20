@@ -42,6 +42,9 @@ export default function Home() {
               <Link href="/search" className="text-gray-700 hover:text-indigo-600">
                 Search
               </Link>
+              <Link href="/companies" className="text-gray-700 hover:text-indigo-600">
+                Companies
+              </Link>
               <Link href="/dashboard" className="text-gray-700 hover:text-indigo-600">
                 Dashboard
               </Link>

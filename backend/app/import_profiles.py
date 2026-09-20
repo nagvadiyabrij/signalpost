@@ -5,6 +5,7 @@ Usage (from ``backend``):
 """
 
 import argparse
+import gzip
 import json
 from datetime import datetime
 from pathlib import Path
@@ -48,7 +49,10 @@ def import_profile(db, row: dict[str, Any]) -> bool:
         db.add(company)
     company.name = str(name)
     company.company_type = profile.get("legal_form") or profile.get("company_type")
+    company.status = "Active" if not profile.get("bankrupt") and not profile.get("liquidating") else "Inactive"
     company.municipality = profile.get("municipality")
+    company.industry = profile.get("industry_label") or profile.get("industry")
+    company.industry_code = profile.get("industry_code")
     website = profile.get("website")
     company.website = f"https://{website}" if website and not str(website).startswith("http") else website
     company.last_verified_at = datetime.utcnow()
@@ -78,7 +82,10 @@ def main() -> None:
     imported = skipped = 0
     db = SessionLocal()
     try:
-        for line in args.profiles.read_text(encoding="utf-8").splitlines():
+        opener = gzip.open if args.profiles.suffix == ".gz" else open
+        with opener(args.profiles, "rt", encoding="utf-8") as profiles_file:
+            lines = profiles_file.read().splitlines()
+        for line in lines:
             if not line.strip():
                 continue
             if import_profile(db, json.loads(line)):

@@ -243,6 +243,43 @@ async def get_stats():
         db.close()
 
 
+@app.get("/api/companies")
+async def list_companies(skip: int = 0, limit: int = 100, search: Optional[str] = None):
+    """List verified companies for the public directory."""
+    from app.database import SessionLocal
+
+    db = SessionLocal()
+    try:
+        query = db.query(Company)
+        if search:
+            query = query.filter(
+                (Company.name.ilike(f"%{search}%")) |
+                (Company.organization_number.ilike(f"%{search}%"))
+            )
+        total = query.count()
+        companies = query.order_by(Company.name.asc()).offset(skip).limit(min(limit, 100)).all()
+        return {
+            "status": "success",
+            "total": total,
+            "companies": [
+                {
+                    "organization_number": company.organization_number,
+                    "name": company.name,
+                    "status": company.status,
+                    "company_type": company.company_type,
+                    "municipality": company.municipality,
+                    "industry": company.industry,
+                    "industry_code": company.industry_code,
+                    "website": company.website,
+                    "last_verified_at": company.last_verified_at.isoformat() if company.last_verified_at else None,
+                }
+                for company in companies
+            ],
+        }
+    finally:
+        db.close()
+
+
 @app.get("/api/company/{organizationNumber}/facts")
 async def get_company_facts(organizationNumber: str):
     """Get all facts for a company"""
