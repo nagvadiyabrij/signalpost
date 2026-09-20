@@ -135,7 +135,23 @@ class IdentityVerifier:
     
     @staticmethod
     def is_valid_norwegian_org_number(org_number: str) -> bool:
-        """Validate Norwegian organization number format"""
+        """Validate Norwegian organization number format using the official checksum rule."""
         normalized = IdentityVerifier._normalize_org_number(org_number)
-        # Should be 9 digits
-        return bool(re.match(r'^\d{9}$', normalized))
+
+        if not bool(re.match(r'^\d{9}$', normalized)):
+            return False
+
+        if normalized == "000000000":
+            return False
+
+        weights = [3, 2, 7, 6, 5, 4, 3, 2]
+        total = sum(int(digit) * weight for digit, weight in zip(normalized[:8], weights))
+        remainder = total % 11
+        check_digit = 11 - remainder
+
+        if check_digit == 11:
+            check_digit = 0
+        elif check_digit == 10:
+            return False
+
+        return check_digit == int(normalized[8])
